@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Default, Copy)]
 pub struct Vec3 {
     pub e: [f64; 3],
 }
@@ -39,7 +39,7 @@ impl Vec3 {
     }
 }
 
-pub fn dot(first: Vec3, second: Vec3) -> f64 {
+pub fn dot(first: &Vec3, second: &Vec3) -> f64 {
     first.e[0] * second.e[0] + first.e[1] * second.e[1] + first.e[2] * second.e[2]
 }
 
@@ -70,6 +70,13 @@ impl ops::Sub for Vec3 {
             self.e[1] - rhs.e[1],
             self.e[2] - rhs.e[2],
         )
+    }
+}
+
+impl ops::Neg for Vec3 {
+    type Output = Vec3;
+    fn neg(self) -> Self::Output {
+        self * -1.0
     }
 }
 

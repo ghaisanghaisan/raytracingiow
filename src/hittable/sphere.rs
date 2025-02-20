@@ -1,5 +1,8 @@
+use std::rc::Rc;
+
 use crate::{
     interval::Interval,
+    material::{Lambertian, Material},
     vec3::{dot, Point3},
 };
 
@@ -8,13 +11,15 @@ use super::{HitRecord, Hittable};
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub mat: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(c: Point3, r: f64) -> Self {
+    pub fn new<M: Material + 'static>(c: Point3, r: f64, m: M) -> Self {
         Self {
             center: c,
-            radius: r,
+            radius: r.max(0.0),
+            mat: Rc::new(m),
         }
     }
 }
@@ -47,6 +52,7 @@ impl Hittable for Sphere {
         let outward_normal = (record.p - self.center) / self.radius;
 
         record.set_face_normal(r, outward_normal);
+        record.mat = self.mat.clone();
 
         true
     }

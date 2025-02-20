@@ -1,17 +1,33 @@
+use std::rc::Rc;
+
 use crate::{
     interval::Interval,
+    material::{Lambertian, Material},
     ray::Ray,
     vec3::{dot, Point3, Vec3},
 };
 
 pub mod sphere;
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub mat: Rc<dyn Material>,
+}
+
+impl Default for HitRecord {
+    fn default() -> Self {
+        Self {
+            p: Point3::default(),
+            normal: Vec3::default(),
+            t: f64::default(),
+            front_face: bool::default(),
+            mat: Rc::new(Lambertian::default()),
+        }
+    }
 }
 
 impl HitRecord {

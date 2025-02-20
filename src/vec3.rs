@@ -79,10 +79,20 @@ impl Vec3 {
             ],
         }
     }
+
+    pub fn near_zero(&self) -> bool {
+        const S: f64 = 1e-8;
+
+        (self.e[0].abs() < S) && (self.e[1].abs() < S) && (self.e[2].abs() < S)
+    }
 }
 
 pub fn dot(first: &Vec3, second: &Vec3) -> f64 {
     first.e[0] * second.e[0] + first.e[1] * second.e[1] + first.e[2] * second.e[2]
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    *v - *n * dot(v, n) * 2.0
 }
 
 impl Display for Vec3 {
@@ -119,6 +129,17 @@ impl ops::Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Self::Output {
         self * -1.0
+    }
+}
+impl ops::Mul for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3::new(
+            self.e[0] * rhs.e[0],
+            self.e[1] * rhs.e[1],
+            self.e[2] * rhs.e[2],
+        )
     }
 }
 

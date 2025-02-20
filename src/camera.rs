@@ -111,10 +111,16 @@ impl Camera {
             return Color::new(0.0, 0.0, 0.0);
         }
         let mut rec = HitRecord::default();
-        if world.hit(r, Interval::new(0.0, f64::INFINITY), &mut rec) {
-            let dir = Vec3::random_on_hemisphere(&rec.normal);
-            let new_r = Ray::new(&rec.p, &dir);
-            return Camera::ray_color(&new_r, depth - 1, world) * 0.5;
+        if world.hit(r, Interval::new(0.001, f64::INFINITY), &mut rec) {
+            //let dir = Vec3::random_on_hemisphere(&rec.normal);
+            //let dir = rec.normal + Vec3::random_unit_vector();
+
+            let mut scattered: Ray = Ray::default();
+            let mut attenuation: Color = Color::default();
+            if rec.mat.scatter(&r, &rec, &mut attenuation, &mut scattered) {
+                return attenuation * Camera::ray_color(&scattered, depth - 1, world);
+            }
+            return Color::new(0.0, 0.0, 0.0);
         }
         let unit_direction = Vec3::unit_vector(r.direction());
         let a = 0.5 * (unit_direction.y() + 1.0);

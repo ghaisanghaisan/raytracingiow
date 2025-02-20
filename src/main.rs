@@ -1,10 +1,9 @@
-use core::f64;
-
 mod camera;
 mod color;
 mod hittable;
 mod interval;
 mod ray;
+mod utility;
 mod vec3;
 
 use camera::Camera;
@@ -16,18 +15,17 @@ fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
-    let image_height = ((image_width as f64 / aspect_ratio) as i32).max(1);
 
     // Camera
 
-    let mut world = HittableList::empty();
-    let a = Sphere::new(Point3::new(0.5, 0.0, -1.0), 0.5);
-    let b = Sphere::new(Point3::new(-0.75, 0.0, -1.5), 0.5);
-    world.add(&a);
-    world.add(&b);
+    let spheres = vec![
+        Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
+        Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+    ];
+    let world = HittableList::from(spheres);
 
-    let camera = Camera::new(image_width, image_height);
-    camera.render(&mut world);
+    let camera = Camera::new(image_width, aspect_ratio, 100, 10);
+    camera.render(&world);
 
     println!("Done!");
 }

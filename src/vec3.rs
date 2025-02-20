@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops};
 
+use crate::utility;
+
 #[derive(Debug, Clone, Default, Copy)]
 pub struct Vec3 {
     pub e: [f64; 3],
@@ -24,6 +26,27 @@ impl Vec3 {
         v / v.length()
     }
 
+    pub fn random_unit_vector() -> Self {
+        loop {
+            let p = Vec3::random_range(-1.0, 1.0);
+            let lensq = p.length_squared();
+
+            if 1e-160 < lensq && lensq <= 1.0 {
+                return p / lensq.sqrt();
+            }
+        }
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+
+        if dot(normal, &on_unit_sphere) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
+    }
+
     pub fn x(&self) -> f64 {
         self.e[0]
     }
@@ -36,6 +59,25 @@ impl Vec3 {
 
     pub fn dot(&self, other: Self) -> f64 {
         self.e[0] * other.e[0] + self.e[1] * other.e[1] + self.e[2] * other.e[2]
+    }
+
+    pub fn random() -> Self {
+        Self {
+            e: [
+                utility::random_double(),
+                utility::random_double(),
+                utility::random_double(),
+            ],
+        }
+    }
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self {
+            e: [
+                utility::random_double_range(min, max),
+                utility::random_double_range(min, max),
+                utility::random_double_range(min, max),
+            ],
+        }
     }
 }
 
@@ -93,5 +135,28 @@ impl ops::Div<f64> for Vec3 {
 
     fn div(self, rhs: f64) -> Self::Output {
         Vec3::new(self.e[0] / rhs, self.e[1] / rhs, self.e[2] / rhs)
+    }
+}
+impl ops::MulAssign<f64> for Vec3 {
+    fn mul_assign(&mut self, rhs: f64) {
+        self.e[0] *= rhs;
+        self.e[1] *= rhs;
+        self.e[2] *= rhs;
+    }
+}
+
+impl ops::AddAssign for Vec3 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.e[0] += rhs.e[0];
+        self.e[1] += rhs.e[1];
+        self.e[2] += rhs.e[2];
+    }
+}
+
+impl ops::MulAssign for Vec3 {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.e[0] *= rhs.e[0];
+        self.e[1] *= rhs.e[1];
+        self.e[2] *= rhs.e[2];
     }
 }

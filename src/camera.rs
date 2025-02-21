@@ -18,7 +18,7 @@ pub struct Camera {
     pub image_width: i32,
     pub sample_per_pixel: i32,
     pub max_depth: i32,
-    image_height: i32,
+    pub image_height: i32,
     pixel_samples_scale: f64,
     focal_length: f64,
     viewport_height: f64,
@@ -33,6 +33,9 @@ pub struct Camera {
 }
 
 impl Camera {
+    pub fn size_of_image(&self) -> i32 {
+        self.image_width * self.image_height
+    }
     pub fn new(image_width: i32, aspect_ratio: f64, sample_per_pixel: i32, max_depth: i32) -> Self {
         let mut ret = Self::default();
         ret.image_width = image_width;
@@ -42,7 +45,7 @@ impl Camera {
 
         ret
     }
-    pub fn render(mut self, world: &HittableList) {
+    pub fn render(&mut self, world: &HittableList) {
         self.initialize();
         let file = File::create("output.ppm").unwrap();
         let mut writer = BufWriter::new(file);

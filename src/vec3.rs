@@ -87,6 +87,15 @@ impl Vec3 {
     }
 }
 
+pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let neg_uv = -(*uv);
+    let cos_theta = dot(&neg_uv, n).min(1.0);
+    let r_perp = (*uv + *n * cos_theta) * etai_over_etat;
+    let r_parallel = *n * -(1.0 - r_perp.length_squared()).sqrt();
+
+    r_perp + r_parallel
+}
+
 pub fn dot(first: &Vec3, second: &Vec3) -> f64 {
     first.e[0] * second.e[0] + first.e[1] * second.e[1] + first.e[2] * second.e[2]
 }

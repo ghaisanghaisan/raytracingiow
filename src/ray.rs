@@ -7,11 +7,8 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(o: &Point3, d: &Point3) -> Self {
-        Self {
-            origin: o.clone(),
-            dir: d.clone(),
-        }
+    pub fn new(o: Point3, d: Point3) -> Self {
+        Self { origin: o, dir: d }
     }
 
     pub fn origin(&self) -> Point3 {

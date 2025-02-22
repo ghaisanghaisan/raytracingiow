@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{
     interval::Interval,
@@ -15,7 +15,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat: Rc<dyn Material>,
+    pub mat: Arc<dyn Material>,
 }
 
 impl Default for HitRecord {
@@ -25,7 +25,7 @@ impl Default for HitRecord {
             normal: Vec3::default(),
             t: f64::default(),
             front_face: bool::default(),
-            mat: Rc::new(Lambertian::default()),
+            mat: Arc::new(Lambertian::default()),
         }
     }
 }
@@ -42,12 +42,12 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: Interval, record: &mut HitRecord) -> bool;
 }
 
 pub struct HittableList {
-    objects: Vec<Box<dyn Hittable>>,
+    objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -57,35 +57,41 @@ impl HittableList {
         }
     }
 
-    pub fn from<T: Hittable + 'static>(objects: Vec<Box<T>>) -> Self {
+    pub fn from<T: Hittable + 'static>(objects: Vec<Arc<T>>) -> Self {
         Self {
             objects: objects
                 .into_iter()
-                .map(|o| o as Box<dyn Hittable>)
+                .map(|o| o as Arc<dyn Hittable>)
                 .collect(),
         }
     }
 
-    pub fn add(&mut self, obj: Box<dyn Hittable>) {
+    pub fn add(&mut self, obj: Arc<dyn Hittable>) {
         self.objects.push(obj);
     }
 }
 
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, ray_t: Interval, record: &mut HitRecord) -> bool {
-        let mut temp_record = HitRecord::default();
         let mut hit_anything = false;
         let mut closest_so_far = ray_t.max;
 
         for obj in &self.objects {
             let new_t = Interval::new(ray_t.min, closest_so_far);
-            if obj.hit(r, new_t, &mut temp_record) {
+            if obj.hit(r, new_t, record) {
                 hit_anything = true;
-                closest_so_far = temp_record.t;
-                *record = temp_record.clone();
+                closest_so_far = record.t;
             }
         }
 
         hit_anything
+    }
+}
+
+impl Clone for HittableList {
+    fn clone(&self) -> Self {
+        Self {
+            objects: self.objects.clone(),
+        }
     }
 }

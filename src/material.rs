@@ -5,7 +5,7 @@ use crate::{
     vec3::{self, dot, reflect, Color, Vec3},
 };
 
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -15,7 +15,7 @@ pub trait Material {
     ) -> bool;
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -38,7 +38,7 @@ impl Material for Lambertian {
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
-        *scattered = Ray::new(&rec.p, &scatter_direction);
+        *scattered = Ray::new(rec.p, scatter_direction);
         *attenuation = self.albedo;
 
         true
@@ -67,8 +67,8 @@ impl Material for Metal {
         scattered: &mut Ray,
     ) -> bool {
         let mut reflected = reflect(&r_in.direction(), &rec.normal);
-        reflected = Vec3::unit_vector(reflected) + (Vec3::random_unit_vector() * self.fuzz);
-        *scattered = Ray::new(&rec.p, &reflected);
+        reflected = Vec3::unit_vector(&reflected) + (Vec3::random_unit_vector() * self.fuzz);
+        *scattered = Ray::new(rec.p, reflected);
         *attenuation = self.albedo;
 
         dot(&scattered.direction(), &rec.normal) > 0.0
@@ -106,7 +106,7 @@ impl Material for Dielectric {
             false => self.refraction_index,
         };
 
-        let unit_direction = Vec3::unit_vector(r_in.direction());
+        let unit_direction = Vec3::unit_vector(&r_in.direction());
         let cos_theta = dot(&-unit_direction, &rec.normal).min(1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
         let direction: Vec3;
@@ -117,7 +117,7 @@ impl Material for Dielectric {
             direction = vec3::refract(&unit_direction, &rec.normal, ri);
         }
 
-        *scattered = Ray::new(&rec.p, &direction);
+        *scattered = Ray::new(rec.p, direction);
 
         true
     }

@@ -10,7 +10,7 @@ pub fn linear_to_gamma(linear_component: f64) -> f64 {
     }
 }
 
-pub fn write_color<W: Write>(w: &mut BufWriter<W>, color: &Color) {
+pub fn color_to_bytes(color: &Color) -> (i32, i32, i32) {
     let color_interval = Interval::new(0.0, 0.999);
     let r = linear_to_gamma(color.x());
     let g = linear_to_gamma(color.y());
@@ -19,5 +19,16 @@ pub fn write_color<W: Write>(w: &mut BufWriter<W>, color: &Color) {
     let gbyte = (color_interval.clamp(g) * 256.0) as i32;
     let bbyte = (color_interval.clamp(b) * 256.0) as i32;
 
+    (rbyte, gbyte, bbyte)
+}
+
+pub fn write_color<W: Write>(w: &mut BufWriter<W>, color: &Color) {
+    let (rbyte, gbyte, bbyte) = color_to_bytes(color);
     writeln!(w, "{} {} {}\n", rbyte, gbyte, bbyte).unwrap();
+}
+
+pub fn write_color_to_string(buffer: &mut String, color: &Color) {
+    let (rbyte, gbyte, bbyte) = color_to_bytes(color);
+
+    buffer.push_str(&format!("{} {} {}\n", rbyte, gbyte, bbyte));
 }
